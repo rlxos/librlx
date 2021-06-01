@@ -2,6 +2,7 @@
 #define __RLX_PATH__
 
 #include <string>
+#include <fstream>
 
 namespace rlx::path
 {
@@ -10,6 +11,14 @@ namespace rlx::path
         if (p.length() == 0)
             return false;
         return p.rfind(ext, 0) == 0;
+    }
+
+    template<typename T>
+    inline void writefile(std::string const& p, T const& content)
+    {
+        std::ofstream file(p);
+        file << content;
+        file.close();
     }
 }
 
