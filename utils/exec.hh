@@ -15,12 +15,16 @@ namespace rlx::utils::exec
     static inline int command(std::string cmd, std::string dir = ".", std::vector<std::string> env = std::vector<std::string>())
     {
 
-        std::string cmd_ = "cd " + dir + "&& ";
+        std::string cmd_ = "";
         for (auto const &i : env)
             cmd_ += i + " ";
 
+        cmd_ = "cd " + dir + "&& ";
+
+        cmd_ += cmd;
+
         std::cout << "Executing '" << cmd << std::endl;
-        return WEXITSTATUS(system((cmd_ + cmd).c_str()));
+        return WEXITSTATUS(system(cmd.c_str()));
     }
 
     static inline std::string output(std::string cmd)
