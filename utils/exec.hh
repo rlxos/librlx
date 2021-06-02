@@ -14,17 +14,14 @@ namespace rlx::utils::exec
 {
     static inline int command(std::string cmd, std::string dir = ".", std::vector<std::string> env = std::vector<std::string>())
     {
-
-        std::string cmd_ = "";
+        std::string cmd_ = "cd " + dir + " && ";
         for (auto const &i : env)
             cmd_ += i + " ";
 
-        cmd_ = "cd " + dir + "&& ";
-
         cmd_ += cmd;
 
-        std::cout << "Executing '" << cmd << std::endl;
-        return WEXITSTATUS(system(cmd.c_str()));
+        std::cout << "Executing '" << cmd_ << std::endl;
+        return WEXITSTATUS(system(cmd_.c_str()));
     }
 
     static inline std::string output(std::string cmd)
@@ -38,7 +35,7 @@ namespace rlx::utils::exec
         while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
             result += buffer.data();
 
-        return result.substr(0,result.length() - 1);
+        return result.substr(0, result.length() - 1);
     }
 }
 
