@@ -7,7 +7,6 @@
     else                                       \
         throw std::runtime_error(#val " is missing in recipe file");
 
-
 #define GETVAL_TYPE(val, node, type)    \
     if (node[#val])                     \
         _##val = node[#val].as<type>(); \
@@ -26,11 +25,17 @@
         return _##value;               \
     }
 
+#define DEFINE_SET_METHOD(type, value) \
+    void value(type _v)                \
+    {                                  \
+        _##value = _v;                 \
+    }
+
 #define DEFINE_RETURNING_SET_METHOD(obj, id, type) \
-    obj &id(type __##id)                            \
-    {                                               \
-        _##id = __##id;                             \
-        return *this;                               \
+    obj &id(type __##id)                           \
+    {                                              \
+        _##id = __##id;                            \
+        return *this;                              \
     }
 
 #define DEFINE_SELF_RETURNING_GET_SET_METHOD(obj, value, type) \
@@ -43,11 +48,11 @@
         return _##value##s;                 \
     }
 
-#define DEFINE_RETURNING_SET_METHOD_PUSH(obj, id, type)       \
-    obj &id(type _##id)                                        \
-    {                                                          \
-        _##id##s.push_back(_##id);                             \
-        return *this;                                          \
+#define DEFINE_RETURNING_SET_METHOD_PUSH(obj, id, type) \
+    obj &id(type _##id)                                 \
+    {                                                   \
+        _##id##s.push_back(_##id);                      \
+        return *this;                                   \
     }
 
 #define DEFINE_SELF_RETURNING_GET_SET_METHOD_PUSH(obj, value, type) \
