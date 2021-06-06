@@ -14,9 +14,12 @@ namespace rlx::utils::exec
 {
     static inline int command(std::string cmd, std::string dir = ".", std::vector<std::string> env = std::vector<std::string>())
     {
-        std::string cmd_ = "cd " + dir + " && ";
+        std::string cmd_ = "set -eu && ";
         for (auto const &i : env)
-            cmd_ += i + " ";
+            cmd_ += i + " && ";
+
+        if (dir != ".")
+            cmd_ += " cd " + dir + " && ";
 
         cmd_ += cmd;
 
