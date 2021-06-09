@@ -100,6 +100,66 @@ namespace rlx::io
         return message(color::BLUE, dt.substr(0, dt.length() - 1), args...);
     }
 
+    inline std::string readfile(std::string path)
+    {
+        std::ifstream file(path);
+        std::string input(
+            (std::istreambuf_iterator<char>(file)),
+            (std::istreambuf_iterator<char>())
+        );
+
+        return input;
+    }
+
+    enum class debug_level : int
+    {
+        none,
+        warn,
+        error,
+        debug,
+        trace,
+    };
+
+    template <typename... Args>
+    void debug(debug_level lev, Args &&...args)
+    {
+        debug_level current = debug_level::none;
+        auto l = std::getenv("DEBUG");
+        if (l != nullptr)
+        {
+            switch (l[0])
+            {
+            case 'N':
+            case 'n':
+                current = debug_level::none;
+                break;
+
+            case 'w':
+            case 'W':
+                current = debug_level::warn;
+                break;
+
+            case 'e':
+            case 'E':
+                current = debug_level::error;
+                break;
+
+            case 'd':
+            case 'D':
+                current = debug_level::debug;
+                break;
+
+            case 't':
+            case 'T':
+                current = debug_level::trace;
+                break;
+            }
+        }
+
+        if (current >= lev)
+            log(args...);
+    }
+
 }
 
 #endif
