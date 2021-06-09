@@ -14,14 +14,14 @@ namespace rlx::utils::exec
 {
     static inline int command(std::string cmd, std::string dir = ".", std::vector<std::string> env = std::vector<std::string>())
     {
-        std::string cmd_ = "set -eu && ";
+        std::string cmd_ = "bash -euc '";
         for (auto const &i : env)
-            cmd_ += i + " && ";
+            cmd_ += " export " + i + "; ";
 
         if (dir != ".")
-            cmd_ += " cd " + dir + " && ";
+            cmd_ += " cd " + dir + "; ";
 
-        cmd_ += cmd;
+        cmd_ += cmd + "'";
 
         std::cout << "Executing '" << cmd_ << std::endl;
         return WEXITSTATUS(system(cmd_.c_str()));
