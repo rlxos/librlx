@@ -16,7 +16,7 @@ bool instlr::bootloader_uefi()
     if (!is_mounted(efi_path_.c_str()))
         fs::create_directories(efi_path_);
 
-    int status = mount(efi_node.c_str(), efi_path_.c_str(), "fat32", 0, nullptr);
+    int status = rlx::utils::exec::command("mount -t auto " + efi_node + " " + efi_path_);
     if (status != 0)
     {
         errmesg = "BootError: Failed to mount efi device " + string(strerror(errno));

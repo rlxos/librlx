@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <fstream>
 
 namespace rlx::io
 {

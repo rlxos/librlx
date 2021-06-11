@@ -222,7 +222,7 @@ namespace rlx::cli
                         {
                             matched = true;
                             if (flg.required() == true)
-                                if (i + 1 > ac)
+                                if (i + 1 < ac)
                                     _values.insert(std::make_pair(flg.id(), std::string(av[++i])));
                                 else
                                 {
