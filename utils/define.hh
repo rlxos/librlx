@@ -19,6 +19,12 @@
     else                                       \
         _##val = opt;
 
+#define OPTVAL_TYPE(val, node, opt, type)      \
+    if (node[#val])                            \
+        _##val = node[#val].as<type>(); \
+    else                                       \
+        _##val = opt;
+
 #define DEFINE_GET_METHOD(type, value) \
     type const value() const           \
     {                                  \
