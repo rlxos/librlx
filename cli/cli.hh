@@ -57,7 +57,7 @@ namespace rlx::cli
 
         bool const checkflag(std::string f) const
         {
-            return std::find(_flags.begin(), _flags.end(), f) == _flags.end();
+            return std::find(_flags.begin(), _flags.end(), f) != _flags.end();
         }
 
         std::string const value(std::string v, std::string default_ = "") const
