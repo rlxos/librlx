@@ -23,10 +23,24 @@ namespace rlx::algo
             std::vector<std::string> ret;
             std::stringstream ss(s);
             std::string i;
-            while(std::getline(ss, i, del))
+            while (std::getline(ss, i, del))
                 ret.push_back(i);
 
             return ret;
+        }
+
+        template <typename T>
+        inline std::string join(std::vector<T> lst, std::string del = " ")
+        {
+            std::stringstream ss;
+            std::string d;
+            for (auto const &s : lst)
+            {
+                ss << d << s;
+                d = del;
+            }
+
+            return ss.str();
         }
     }
 }

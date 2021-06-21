@@ -106,10 +106,17 @@ namespace rlx::io
         std::ifstream file(path);
         std::string input(
             (std::istreambuf_iterator<char>(file)),
-            (std::istreambuf_iterator<char>())
-        );
+            (std::istreambuf_iterator<char>()));
 
         return input;
+    }
+
+    template <typename T>
+    inline void writefile(std::string path, T content)
+    {
+        std::ofstream file(path);
+        file << content;
+        file.flush();
     }
 
     enum class debug_level : int
