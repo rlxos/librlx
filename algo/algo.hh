@@ -16,6 +16,13 @@ namespace rlx::algo
         return false;
     }
 
+    template <typename T>
+    std::vector<T> merge(std::vector<T> a, std::vector<T> b)
+    {
+        a.insert(a.end(), b.begin(), b.end());
+        return a;
+    }
+
     namespace str
     {
         inline std::vector<std::string> split(std::string const &s, char del = ' ')

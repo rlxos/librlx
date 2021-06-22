@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <fstream>
+#include <vector>
 
 namespace rlx::io
 {
@@ -117,6 +118,19 @@ namespace rlx::io
         std::ofstream file(path);
         file << content;
         file.flush();
+    }
+
+    template <typename T>
+    inline std::ostream &operator<<(std::ostream &os, std::vector<T> const &v)
+    {
+        std::string sep;
+        for (auto const &i : v)
+        {
+            io::print(sep, i);
+            sep = ",";
+        }
+
+        return os;
     }
 
     template <typename T>
