@@ -119,6 +119,16 @@ namespace rlx::io
         file.flush();
     }
 
+    template <typename T>
+    inline std::string input(T &in, std::string mesg = "")
+    {
+        std::string l;
+        io::print(mesg, " >> ");
+        std::getline(in, l);
+
+        return l;
+    }
+
     enum class debug_level : int
     {
         none,

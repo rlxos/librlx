@@ -2,7 +2,7 @@
 
 #include <string>
 #include <filesystem>
-
+#include "../io.hh"
 #include "string.hh"
 
 namespace rlx::utils::sys
@@ -14,5 +14,11 @@ namespace rlx::utils::sys
             throw std::runtime_error("failed to create tempdir() " + dir);
 
         return dir;
+    }
+
+    inline std::string tempfile(std::string prefix, std::string name)
+    {
+        name = prefix + "/" + name + "-" + string::random(5);
+        return name;
     }
 }

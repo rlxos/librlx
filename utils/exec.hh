@@ -10,6 +10,8 @@
 #include <stdexcept>
 #include <array>
 
+#include "../io.hh"
+
 namespace rlx::utils::exec
 {
     static inline int command(std::string cmd, std::string dir = ".", std::vector<std::string> env = std::vector<std::string>())
@@ -23,7 +25,7 @@ namespace rlx::utils::exec
 
         cmd_ += cmd + "'";
 
-        std::cout << "Executing '" << cmd_ << std::endl;
+        rlx::io::debug(rlx::io::debug_level::trace, "Executing '", cmd_);
         return WEXITSTATUS(system(cmd_.c_str()));
     }
 

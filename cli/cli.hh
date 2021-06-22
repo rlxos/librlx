@@ -18,16 +18,24 @@
 namespace rlx::cli
 {
 
+    using std::string;
     class app;
 
     class context
     {
+    public:
+        using fn_t = std::function<int(context const &)>;
+
+    private:
         YAML::Node _config;
         std::vector<std::string> _args;
         std::vector<std::string> _flags;
 
+        using fns = std::map<std::string, fn_t>;
+
         using map_t = std::map<std::string, std::string>;
         map_t _values;
+        fns _fn_s;
 
         app *_app;
 
@@ -36,11 +44,13 @@ namespace rlx::cli
                 std::vector<std::string> const &a,
                 std::vector<std::string> const &f,
                 std::map<std::string, std::string> const &v,
+                fns const &_f,
                 app *_app)
             : _config(c),
               _args(a),
               _flags(f),
               _values(v),
+              _fn_s(_f),
               _app(_app)
         {
         }
@@ -49,6 +59,7 @@ namespace rlx::cli
         DEFINE_GET_METHOD(std::vector<std::string>, args);
         DEFINE_GET_METHOD(std::vector<std::string>, flags);
         DEFINE_GET_METHOD(map_t, values);
+        DEFINE_GET_METHOD(fns, fn_s);
 
         cli::app const *getapp() const
         {
@@ -68,9 +79,12 @@ namespace rlx::cli
 
             return val->second;
         }
-    };
 
-    using fn_t = std::function<int(context const &)>;
+        int exec(string const &i, context const & cc)
+        {
+            return _fn_s[i](cc);
+        }
+    };
 
     class author
     {
@@ -106,7 +120,7 @@ namespace rlx::cli
         char _short_id;
         std::string _long_id, _about;
         bool _required = false;
-        fn_t _fn;
+        context::fn_t _fn;
         std::string _id;
 
     public:
@@ -130,7 +144,7 @@ namespace rlx::cli
 
         DEFINE_SELF_RETURNING_GET_SET_METHOD(arg, required, bool);
 
-        DEFINE_SELF_RETURNING_GET_SET_METHOD(arg, fn, fn_t);
+        DEFINE_SELF_RETURNING_GET_SET_METHOD(arg, fn, context::fn_t);
 
         bool match(std::string const &l) const
         {
@@ -150,7 +164,7 @@ namespace rlx::cli
             _about,
             _usage;
 
-        fn_t _fn;
+        context::fn_t _fn;
 
         std::vector<cli::author> _authors;
         std::vector<cli::arg> _args;
@@ -161,7 +175,27 @@ namespace rlx::cli
 
         std::map<std::string, std::string> _values;
 
+        std::map<std::string, context::fn_t> _fns;
+
         YAML::Node _config;
+
+        bool const is_sub(string id) const
+        {
+            for (auto const &i : _subs)
+                if (i.id() == id)
+                    return true;
+
+            return false;
+        }
+
+        bool const is_flag(string id) const
+        {
+            for (auto const &i : _args)
+                if (i.id() == id)
+                    return true;
+
+            return false;
+        }
 
     public:
         app(std::string appid)
@@ -182,13 +216,33 @@ namespace rlx::cli
 
         DEFINE_SELF_RETURNING_GET_SET_METHOD(app, usage, std::string);
 
-        DEFINE_SELF_RETURNING_GET_SET_METHOD(app, fn, fn_t);
+        DEFINE_SELF_RETURNING_GET_SET_METHOD(app, fn, context::fn_t);
 
         DEFINE_SELF_RETURNING_GET_SET_METHOD_PUSH(app, author, cli::author);
 
-        DEFINE_SELF_RETURNING_GET_SET_METHOD_PUSH(app, arg, cli::arg);
+        app &arg(cli::arg a)
+        {
+            _args.push_back(a);
+            _fns[a.id()] = a.fn();
+            return *this;
+        }
 
-        DEFINE_SELF_RETURNING_GET_SET_METHOD_PUSH(app, sub, cli::app);
+        app &sub(cli::app a)
+        {
+            _subs.push_back(a);
+            _fns[a.id()] = a.fn();
+            return *this;
+        }
+
+        std::vector<cli::arg> const &arg() const
+        {
+            return _args;
+        }
+
+        std::vector<cli::app> const &sub() const
+        {
+            return _subs;
+        }
 
         app &config(std::vector<std::string> config_paths)
         {
@@ -243,48 +297,38 @@ namespace rlx::cli
             return *this;
         }
 
-        int exec()
+        int exec(std::string task = "main")
         {
-            std::string task = "main";
+            _fns["main"] = _fn;
             auto args_ = _cmd_args;
+            context::fn_t fnptr = nullptr;
 
-  
-                // check for first argument;
-                if (_cmd_args.size())
-                {
-                    for (auto const &i : _subs)
-                    {
-                        if (i.id() == _cmd_args[0] && i.fn() != nullptr)
-                        {
-                            utils::container::pop_front(args_);
-                            auto context_ = context(_config, args_, _flags, _values, this);
-                            return i.fn()(context_);
-                        }
-                    }
-                }
-                else if (_flags.size())
-                {
-                    for (auto const &i : _args)
-                    {
-                        if (i.id() == _flags[0] && i.fn() != nullptr)
-                        {
-                            utils::container::pop_front(args_);
-                            auto context_ = context(_config, args_, _flags, _values, this);
-                            return i.fn()(context_);
-                        }
-                    }
-                }
-                {
+            if (_cmd_args.size() == 0 && _fns.find("main") != _fns.end())
+            {
+                fnptr = _fns["main"];
+            }
 
-                    auto context_ = context(_config, args_, _flags, _values, this);
-                    if (fn() != nullptr)
-                        return fn()(context_);
-                }
-            
+            else if (_cmd_args.size() != 0 && is_sub(_cmd_args[0]))
+            {
+                utils::container::pop_front(args_);
+                fnptr = _fns[_cmd_args[0]];
+            }
 
-            std::cout << "invalid usage" << std::endl;
-            std::cout << *this << std::endl;
-            return 1;
+            else if (is_flag(_flags[0]))
+            {
+                utils::container::pop_front(args_);
+                fnptr = _fns[_flags[0]];
+            }
+
+            auto cc = context(_config, args_, _flags, _values, _fns, this);
+            if (fnptr == nullptr)
+            {
+                io::error("invalid task ", task);
+                io::println(*this);
+                return 1;
+            }
+
+            return fnptr(cc);
         }
 
         friend std::ostream &operator<<(std::ostream &os, app const &app)
