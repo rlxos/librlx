@@ -37,6 +37,7 @@ namespace rlx::path
         {
             return watcher();
         }
+        DEFINE_SELF_RETURNING_GET_SET_METHOD(watcher, paths, std::vector<std::string>);
 
         DEFINE_SELF_RETURNING_GET_SET_METHOD_PUSH(watcher, path, std::string);
 

@@ -24,7 +24,7 @@ namespace rlx::curl
         assert(__progress != nullptr);
         NowDownloaded += already_done;
         TotalToDownload += already_done;
-        
+
         __progress->mesg(utils::string::humanize(NowDownloaded) + "/" + utils::string::humanize(TotalToDownload));
         __progress->update(std::cout, static_cast<float>((NowDownloaded / TotalToDownload) * 100.0));
 
@@ -80,6 +80,9 @@ namespace rlx::curl
         auto out = curl_easy_perform(curl);
         curl_easy_cleanup(curl);
         fclose(file);
+
+        io::println("\r");
+
         if (out == CURLE_OK)
             std::filesystem::rename(path + ".tmp", path);
 

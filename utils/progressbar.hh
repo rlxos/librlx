@@ -11,7 +11,7 @@ namespace rlx::utils
     {
     private:
         float _value;
-        unsigned int _bar_width = 50;
+        unsigned int _bar_width = 30;
         std::string _fill = "■", _empty = " ";
         std::string _mesg;
 
@@ -38,7 +38,7 @@ namespace rlx::utils
             if (_value > 100.0f)
                 return;
 
-            io::fprint(os, "                                 \r");
+            io::fprint(os, "   \r");
             os << std::flush;
 
             io::fprint(os, color::BOLD, "[", color::RESET);
