@@ -10,7 +10,7 @@
 #include <stdexcept>
 #include <array>
 
-#include "../io.hh"
+#include <io.hh>
 
 namespace rlx::utils::exec
 {
