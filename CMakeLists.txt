@@ -14,3 +14,9 @@ add_subdirectory(utils)
 add_subdirectory(instlr)
 add_subdirectory(sys)
 add_subdirectory(tests)
+
+install(
+    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    DESTINATION include/rlx/utils
+    FILES_MATCHING PATTERN "*.hh"
+)
