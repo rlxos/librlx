@@ -80,7 +80,7 @@ namespace rlx::cli
             return val->second;
         }
 
-        int exec(string const &i, context const & cc)
+        int exec(string const &i, context const &cc)
         {
             return _fn_s[i](cc);
         }
@@ -164,7 +164,7 @@ namespace rlx::cli
             _about,
             _usage;
 
-        context::fn_t _fn;
+        context::fn_t _fn = nullptr;
 
         std::vector<cli::author> _authors;
         std::vector<cli::arg> _args;
@@ -299,25 +299,21 @@ namespace rlx::cli
 
         int exec(std::string task = "main")
         {
-            _fns["main"] = _fn;
             auto args_ = _cmd_args;
             context::fn_t fnptr = nullptr;
 
-            if (_cmd_args.size() == 0 && _fns.find("main") != _fns.end())
-            {
-                fnptr = _fns["main"];
-            }
-
-            else if (_cmd_args.size() != 0 && is_sub(_cmd_args[0]))
+            if (_cmd_args.size() && is_sub(_cmd_args[0]))
             {
                 utils::container::pop_front(args_);
                 fnptr = _fns[_cmd_args[0]];
             }
-
-            else if (is_flag(_flags[0]))
+            else if (_flags.size() && is_flag(_flags[0]) && _fns[_flags[0]] != nullptr)
             {
-                utils::container::pop_front(args_);
                 fnptr = _fns[_flags[0]];
+            }
+            else if (_fn != nullptr)
+            {
+                fnptr = _fn;
             }
 
             auto cc = context(_config, args_, _flags, _values, _fns, this);
@@ -331,7 +327,8 @@ namespace rlx::cli
             return fnptr(cc);
         }
 
-        friend std::ostream &operator<<(std::ostream &os, app const &app)
+        friend std::ostream &
+        operator<<(std::ostream &os, app const &app)
         {
             os << app.id() << "-" << app.version() << " : " << app.about() << "\n";
             os << "\nUsage: " << app.id() << " " << app.usage() << "\n";
