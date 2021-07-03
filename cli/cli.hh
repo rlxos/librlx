@@ -47,12 +47,19 @@ namespace rlx::cli
                 fns const &_f,
                 app *_app)
             : _config(c),
-              _args(a),
               _flags(f),
               _values(v),
               _fn_s(_f),
               _app(_app)
         {
+            for (auto const &i : a)
+            {
+                size_t idx = i.find_first_of('=');
+                if (idx == string::npos)
+                    _args.push_back(i);
+                else
+                    _config[i.substr(0, idx)] = i.substr(idx + 1, i.length() - (idx + 1));
+            }
         }
 
         DEFINE_GET_METHOD(YAML::Node, config);
