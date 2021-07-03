@@ -4,53 +4,43 @@
 #include <dlfcn.h>
 #include <stdexcept>
 #include "../io.hh"
+#include "../rlx.hh"
 
 namespace rlx::sys
 {
+    using std::string;
 
-    class dynlib_exception : std::exception
-    {
-        char const *_lib;
-
-    public:
-        dynlib_exception(char const *w)
-            : _lib(w)
-        {
-        }
-        char const *what() const throw()
-        {
-            return io::format(_lib).c_str();
-        }
-    };
-
-    class dynlib
+    class dylink : rlx::obj
     {
     private:
         void *_handler;
 
     public:
-        dynlib(char const *lib, int flags = RTLD_LAZY)
+        dylink(char const *lib, int f = RTLD_NOW)
         {
-            _handler = dlopen(lib, flags);
-            if (!_handler)
-                throw dynlib_exception(dlerror());
+            _handler = dlopen(lib, f);
+            if (_handler == nullptr)
+                _error = dlerror();
+
+            dlerror();
         }
 
-        dynlib(dynlib const &src) = delete;
-
-        virtual ~dynlib()
+        template <typename T>
+        T lookup(char const *fn)
         {
-            if (_handler)
+            void *_f = dlsym(_handler, fn);
+            if (_f == nullptr)
+                _error = dlerror();
+
+            return (T)(_f);
+        }
+
+        dylink(dylink const &) = delete;
+
+        ~dylink()
+        {
+            if (_handler != nullptr)
                 dlclose(_handler);
-        }
-
-        void *lookup(char const *symbol)
-        {
-            auto fn = dlsym(_handler, symbol);
-            if (!fn)
-                throw dynlib_exception(dlerror());
-
-            return fn;
         }
     };
 }
