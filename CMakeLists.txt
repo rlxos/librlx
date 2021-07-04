@@ -15,8 +15,8 @@ add_subdirectory(instlr)
 add_subdirectory(sys)
 add_subdirectory(tests)
 
-install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION include/rlx/
-    FILES_MATCHING PATTERN "*.hh"
-)
+# install(
+#     DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+#     DESTINATION include/rlx/
+#     FILES_MATCHING PATTERN "*.hh"
+# )
