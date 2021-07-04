@@ -25,6 +25,7 @@ namespace rlx::cli
     {
     public:
         using fn_t = std::function<int(context const &)>;
+        using exception_handler = std::function<int(std::exception_ptr p)>;
 
     private:
         YAML::Node _config;
@@ -32,8 +33,10 @@ namespace rlx::cli
         std::vector<std::string> _flags;
 
         using fns = std::map<std::string, fn_t>;
-
         using map_t = std::map<std::string, std::string>;
+
+        exception_handler _exception_handler = nullptr;
+
         map_t _values;
         fns _fn_s;
 
@@ -45,12 +48,14 @@ namespace rlx::cli
                 std::vector<std::string> const &f,
                 std::map<std::string, std::string> const &v,
                 fns const &_f,
-                app *_app)
+                app *_app,
+                exception_handler _exception_handler = nullptr)
             : _config(c),
               _flags(f),
               _values(v),
               _fn_s(_f),
-              _app(_app)
+              _app(_app),
+              _exception_handler(_exception_handler)
         {
             for (auto const &i : a)
             {
@@ -89,7 +94,25 @@ namespace rlx::cli
 
         int exec(string const &i, context const &cc)
         {
-            return _fn_s[i](cc);
+            try
+            {
+                return _fn_s[i](cc);
+            }
+            catch (...)
+            {
+                std::exception_ptr p = std::current_exception();
+                if (_exception_handler == nullptr)
+                {
+                    std::clog << (p ? p.__cxa_exception_type()->name() : "null") << std::endl;
+                    return 1;
+                }
+                else
+                {
+                    return _exception_handler(p);
+                }
+            }
+
+            return 0;
         }
     };
 
@@ -184,6 +207,8 @@ namespace rlx::cli
 
         std::map<std::string, context::fn_t> _fns;
 
+        context::exception_handler _exception_handler = nullptr;
+
         YAML::Node _config;
 
         bool const is_sub(string id) const
@@ -226,6 +251,8 @@ namespace rlx::cli
         DEFINE_SELF_RETURNING_GET_SET_METHOD(app, fn, context::fn_t);
 
         DEFINE_SELF_RETURNING_GET_SET_METHOD_PUSH(app, author, cli::author);
+
+        DEFINE_SELF_RETURNING_GET_SET_METHOD(app, exception_handler, context::exception_handler);
 
         app &arg(cli::arg a)
         {
@@ -323,7 +350,7 @@ namespace rlx::cli
                 fnptr = _fn;
             }
 
-            auto cc = context(_config, args_, _flags, _values, _fns, this);
+            auto cc = context(_config, args_, _flags, _values, _fns, this, _exception_handler);
             if (fnptr == nullptr)
             {
                 io::error("invalid task ", task);
@@ -331,7 +358,28 @@ namespace rlx::cli
                 return 1;
             }
 
-            return fnptr(cc);
+            try
+            {
+                return fnptr(cc);
+            }
+            catch (std::exception const &e)
+            {
+                auto p = std::make_exception_ptr(e);
+                if (_exception_handler)
+                    return _exception_handler(p);
+
+                io::message(io::color::RED, "Exception", e.what());
+                return 1;
+            }
+            catch (...)
+            {
+                auto p = std::current_exception();
+                if (_exception_handler)
+                    return _exception_handler(p);
+
+                io::message(rlx::io::color::RED, "Exception", p.__cxa_exception_type()->name());
+                return 1;
+            }
         }
 
         friend std::ostream &
