@@ -18,5 +18,7 @@ add_subdirectory(tests)
 install(
     DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
     DESTINATION include/rlx/
-    FILES_MATCHING PATTERN "*.hh"
+    FILES_MATCHING 
+    PATTERN "*.hh"
+    PATTERN "build" EXCLUDE
 )
