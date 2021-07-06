@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <filesystem>
 
+#include "../algo/algo.hh"
 #include "../utils/utils.hh"
 
 namespace rlx::cli
@@ -63,7 +64,30 @@ namespace rlx::cli
                 if (idx == string::npos)
                     _args.push_back(i);
                 else
-                    _config[i.substr(0, idx)] = i.substr(idx + 1, i.length() - (idx + 1));
+                {
+                    auto _cfg = algo::str::split(i.substr(0, idx), '.');
+                    io::debug(io::debug_level::trace, "size: ", _cfg.size());
+                    int j = 0;
+                    auto *n = &_config;
+
+                    while (j + 1 < _cfg.size())
+                    {
+                        io::debug(io::debug_level::trace, "added ", _cfg[j], " = ", _cfg[j + 1]);
+                        if (!(*n)[_cfg[j]])
+                        {
+                            (*n)[_cfg[j]].push_back(YAML::Node(_cfg[j + 1]));
+                            (*n).remove(0);
+                        }
+
+                        n = &(*n)[_cfg[j]];
+                        j = j + 1;
+                    }
+                    auto val = algo::str::split(i.substr(idx + 1, i.length() - (idx + 1)), ',');
+                    if (val.size() == 1)
+                        (*n)[_cfg[j]] = YAML::Node(val[0]);
+                    else
+                        (*n)[_cfg[j]] = YAML::Node(val);
+                }
             }
         }
 
