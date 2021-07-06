@@ -10,8 +10,10 @@ namespace rlx::utils::sys
     inline std::string tempdir(std::string prefix, std::string dir)
     {
         dir = prefix + "/" + dir + "-" + string::random(5);
-        if (!std::filesystem::create_directories(dir))
-            throw std::runtime_error("failed to create tempdir() " + dir);
+        std::error_code ec;
+        std::filesystem::create_directories(dir, ec);
+        if (ec)
+            throw std::runtime_error(ec.message() + " " + dir);
 
         return dir;
     }
