@@ -11,6 +11,7 @@
 
 #include <assert.h>
 #include <sys/stat.h>
+#include <libgen.h>
 
 namespace rlx::curl
 {
@@ -78,15 +79,17 @@ namespace rlx::curl
         curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 10);
 
         auto out = curl_easy_perform(curl);
+        long http_code = 0;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
         curl_easy_cleanup(curl);
         fclose(file);
 
         io::println("\r");
 
-        if (out == CURLE_OK)
+        if (out == CURLE_OK && http_code == 200)
             std::filesystem::rename(path + ".tmp", path);
 
         delete __progress;
-        return out == CURLE_OK;
+        return out == CURLE_OK && http_code == 200;
     }
 }

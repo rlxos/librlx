@@ -91,11 +91,11 @@ namespace rlx::cli
             }
         }
 
-        DEFINE_GET_METHOD(YAML::Node, config);
-        DEFINE_GET_METHOD(std::vector<std::string>, args);
-        DEFINE_GET_METHOD(std::vector<std::string>, flags);
-        DEFINE_GET_METHOD(map_t, values);
-        DEFINE_GET_METHOD(fns, fn_s);
+        DEFINE_GET_SET_METHOD(YAML::Node, config);
+        DEFINE_GET_SET_METHOD(std::vector<std::string>, args);
+        DEFINE_GET_SET_METHOD(std::vector<std::string>, flags);
+        DEFINE_GET_SET_METHOD(map_t, values);
+        DEFINE_GET_SET_METHOD(fns, fn_s);
 
         cli::app const *getapp() const
         {
@@ -116,11 +116,11 @@ namespace rlx::cli
             return val->second;
         }
 
-        int exec(string const &i, context const &cc)
+        int exec(string const &i, context const &cc) const
         {
             try
             {
-                return _fn_s[i](cc);
+                return _fn_s.find(i)->second(cc);
             }
             catch (...)
             {

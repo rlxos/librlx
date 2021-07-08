@@ -19,10 +19,10 @@
     else                                       \
         _##val = opt;
 
-#define OPTVAL_TYPE(val, node, opt, type)      \
-    if (node[#val])                            \
-        _##val = node[#val].as<type>(); \
-    else                                       \
+#define OPTVAL_TYPE(val, node, opt, type) \
+    if (node[#val])                       \
+        _##val = node[#val].as<type>();   \
+    else                                  \
         _##val = opt;
 
 #define DEFINE_GET_METHOD(type, value) \
@@ -36,6 +36,10 @@
     {                                  \
         _##value = _v;                 \
     }
+
+#define DEFINE_GET_SET_METHOD(type, value) \
+    DEFINE_GET_METHOD(type, value)         \
+    DEFINE_SET_METHOD(type, value)
 
 #define DEFINE_RETURNING_SET_METHOD(obj, id, type) \
     obj &id(type __##id)                           \
