@@ -10,6 +10,11 @@ namespace rlx::utils::string
         "0123456789"
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+    inline bool starts_with(std::string const &val, std::string const &prefix)
+    {
+        return val.rfind(prefix, 0) == 0;
+    }
+
     inline bool ends_with(std::string const &value, std::string const &ending)
     {
         if (ending.size() > value.size())
